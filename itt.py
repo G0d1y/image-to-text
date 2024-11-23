@@ -25,9 +25,12 @@ async def read_text_from_image(client, message):
     try:
         image = Image.open(file_path)
         
-        extracted_text = pytesseract.image_to_string(image)
+        extracted_text = pytesseract.image_to_string(image, lang='fas')
         
-        await message.reply_text(f"Extracted Text:\n\n{extracted_text}")
+        if extracted_text.strip():
+            await message.reply_text(f"Extracted Text:\n\n{extracted_text}")
+        else:
+            await message.reply_text("No text detected or text could not be recognized.")
     except Exception as e:
         await message.reply_text(f"An error occurred: {e}")
     finally:
@@ -36,6 +39,8 @@ async def read_text_from_image(client, message):
 
 @app.on_message(filters.command("start"))
 async def start_command(client, message):
-    await message.reply_text("Hello! Send an image to extract text from it.")
+    await message.reply_text(
+        "Hello! Send an image with the to extract Persian text from it."
+    )
 
 app.run()
