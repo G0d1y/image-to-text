@@ -1,8 +1,10 @@
 import json
 import os
 from pyrogram import Client, filters
-from PIL import Image
 import pytesseract
+from PIL import Image, ImageEnhance
+import cv2
+import numpy as np
 
 with open('config.json') as config_file:
     config = json.load(config_file)
@@ -18,14 +20,26 @@ app = Client(
     bot_token=bot_token
 )
 
+def preprocess_image(image_path):
+    image = Image.open(image_path)
+    
+    gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
+    
+    _, thresholded_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY)
+    
+    denoised_image = cv2.fastNlMeansDenoising(thresholded_image, None, 30, 7, 21)
+    
+    processed_image = Image.fromarray(denoised_image)
+    return processed_image
+
 @app.on_message(filters.photo)
 async def read_text_from_image(client, message):
     file_path = await message.download()
     
     try:
-        image = Image.open(file_path)
+        processed_image = preprocess_image(file_path)
         
-        extracted_text = pytesseract.image_to_string(image, lang='fas')
+        extracted_text = pytesseract.image_to_string(processed_image, lang='fas')
         
         if extracted_text.strip():
             await message.reply_text(f"Extracted Text:\n\n{extracted_text}")
