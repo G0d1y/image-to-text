@@ -34,7 +34,7 @@ def preprocess_image(image_path):
     
     
     denoised_image = Image.fromarray(denoised_image)
-    denoised_image = denoised_image.resize((denoised_image.width * 2, denoised_image.height * 2), Image.ANTIALIAS)
+    denoised_image = denoised_image.resize((denoised_image.width * 2, denoised_image.height * 2), Image.Resampling.LANCZOS)
     
     return denoised_image
 
