@@ -27,14 +27,20 @@ def preprocess_image(image_path):
     gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
     
     
-    _, thresholded_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY)
+    thresholded_image = cv2.adaptiveThreshold(
+        gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+    )
     
     
     denoised_image = cv2.fastNlMeansDenoising(thresholded_image, None, 30, 7, 21)
     
     
     denoised_image = Image.fromarray(denoised_image)
-    denoised_image = denoised_image.resize((denoised_image.width * 2, denoised_image.height * 2), Image.Resampling.LANCZOS)
+    
+    
+    denoised_image = denoised_image.resize(
+        (denoised_image.width * 2, denoised_image.height * 2), Image.Resampling.LANCZOS
+    )
     
     return denoised_image
 
@@ -45,7 +51,10 @@ async def read_text_from_image(client, message):
     try:
         processed_image = preprocess_image(file_path)
         
+        
         custom_oem_psm_config = r'--oem 3 --psm 6'
+        
+        
         extracted_text = pytesseract.image_to_string(processed_image, lang='fas', config=custom_oem_psm_config)
         
         if extracted_text.strip():
